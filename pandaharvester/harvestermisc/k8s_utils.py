@@ -87,6 +87,7 @@ class k8s_Client(object):
         # note that predefined values in the yaml template will NOT be overwritten
         container_env.setdefault('resources', {})
         if work_spec.nCore > 0:
+
             # CPU limits
             container_env['resources'].setdefault('limits', {})
             if 'cpu' not in container_env['resources']['limits']:

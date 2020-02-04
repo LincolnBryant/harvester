@@ -644,8 +644,10 @@ class Monitor(AgentBase):
                         tmp_log.debug('kill workerID={0} due to queuing longer than {1} seconds'.format(
                                         workerID, workerQueueTimeLimit))
                         self.dbProxy.kill_worker(workSpec.workerID)
-                        diagMessage = 'Killed by Harvester due to worker queuing too long' + diagMessage
+                        diagMessage = 'Killed by Harvester due to worker queuing too long. ' + diagMessage
                         workSpec.set_pilot_error(PilotErrors.ERR_FAILEDBYSERVER, diagMessage)
+                        # set closed
+                        workSpec.set_pilot_closed()
                     # expired heartbeat - only when requested in the configuration
                     try:
                         # check if the queue configuration requires checking for worker heartbeat

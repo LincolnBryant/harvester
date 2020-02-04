@@ -4,9 +4,7 @@
 #
 #
 import sys
-
 from setuptools import setup, find_packages
-
 from pandaharvester import panda_pkg_info
 
 sys.path.insert(0, '.')
@@ -30,7 +28,7 @@ setup(
                       'future',
                       'futures; python_version == "2.*"',
                       'pycryptodomex',
-                      'panda-common-s >= 0.0.11',
+                      'panda-common',
                       'pyjwt',
                       'subprocess32; python_version == "2.*"',
                       'rpyc',
