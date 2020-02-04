@@ -5,7 +5,7 @@ metadata:
   name: grid-job
 spec:
   ttlSecondsAfterFinished: 172800
-  backoffLimit: 4
+  backoffLimit: 0
   template:
     spec:
       restartPolicy: Never
@@ -36,9 +36,24 @@ spec:
             - name: PANDA_JSID
               value: "$PANDA_JSID"
             - name: TMPDIR
-              value: "/home/localuser"
+              value: "/root"
+            - name: PILOT_NOKILL
+              value: "True"
           command: ["/usr/bin/bash"]
-          args: ["-c", "cd; wget https://raw.githubusercontent.com/HSF/harvester/master/pandaharvester/harvestercloud/k8s_startup_script.py; python k8s_startup_script.py"]
+          args: ["-c", "cd; wget https://raw.githubusercontent.com/HSF/harvester/k8s_analysis/pandaharvester/harvestercloud/pilots_starter.py; chmod 755 pilots_starter.py; ./pilots_starter.py || true"]
+          volumeMounts:
+            - name: atlas
+              mountPath: /cvmfs/atlas.cern.ch
+            - name: atlas-condb
+              mountPath: /cvmfs/atlas-condb.cern.ch
+            - name: atlas-nightlies
+              mountPath: /cvmfs/atlas-nightlies.cern.ch
+            - name: sft
+              mountPath: /cvmfs/sft.cern.ch
+            - name: grid
+              mountPath: /cvmfs/grid.cern.ch
+            - name: proxy-secret
+              mountPath: /proxy
       volumes:
         - name: atlas
           persistentVolumeClaim:
