@@ -138,11 +138,10 @@ class K8sSubmitter(PluginBase):
             # read the job configuration (if available, only push model)
             job_fields, job_pars_parsed = self.read_job_configuration(work_spec)
 
-            # decide container image to run
+            # decide container image and executable to run
             container_image = self.decide_container_image(job_fields, job_pars_parsed)
-
-            # build executable
             executable = self.build_executable(job_fields, job_pars_parsed)
+            tmp_log.debug('container_image: "{0}"; executable: "{1}"'.format(container_image, executable))
 
             if hasattr(self, 'proxySecretPath'):
                 cert = self.proxySecretPath
