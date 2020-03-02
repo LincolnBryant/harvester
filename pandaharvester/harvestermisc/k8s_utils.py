@@ -22,6 +22,8 @@ DEF_ARGS = ["-c", "cd; wget https://raw.githubusercontent.com/HSF/harvester/k8s_
 class k8s_Client(object):
 
     def __init__(self, namespace, config_file=None):
+        if not os.path.isfile(config_file):
+            raise RuntimeError('Cannot find k8s config file: {0}'.format(config_file))
         config.load_kube_config(config_file=config_file)
         self.namespace = namespace if namespace else 'default'
         self.corev1 = client.CoreV1Api()
@@ -262,18 +264,6 @@ class k8s_Client(object):
             rsp = self.corev1.create_namespaced_secret(body=body, namespace=self.namespace)
         return rsp
 
-    def retrieve_pod_log(self, job_id):
-
-        tmp_log = core_utils.make_logger(base_logger, method_name='retrieve_pod_log')
-
-        try:
-            log_content = self.corev1.read_namespaced_pod_log(name=job_id, namespace=self.namespace)
-            # TODO: figure out what to do with the log. Ideally store it in file and let communicator take care of it
-            return log_content
-        except ApiException as e:
-            tmp_log.debug('Exception retrieving logs for pod {0}: {1}'.format(job_id, e))
-            return None
-
     def create_configmap(self, work_spec):
         # useful guide: https://matthewpalmer.net/kubernetes-app-developer/articles/ultimate-configmap-guide-kubernetes.html
 
@@ -310,3 +300,11 @@ class k8s_Client(object):
             tmp_log.error('Could not create configmap with: {0}'.format(e))
             return False
 
+    def get_pod_logs(self, pod_name, previous=False):
+        try:
+            rsp = self.corev1.read_namespaced_pod_log(name=pod_name, namespace=self.namespace, previous=previous)
+        except ApiException as e:
+            print('Exception when getting logs from pod {0} : {1} . Skipped'.format(e))
+            raise
+        else:
+            return rsp
