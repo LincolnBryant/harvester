@@ -118,7 +118,7 @@ class K8sSubmitter(PluginBase):
         executable = None
         try:
             if 'runcontainer' in job_fields['transformation']:
-                executable = job_pars_parsed.executable
+                executable = job_pars_parsed.executable.strip('"\'')  # remove any quotes
         except (AttributeError, TypeError):
             executable = None
 
