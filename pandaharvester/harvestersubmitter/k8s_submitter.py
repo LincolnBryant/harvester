@@ -122,10 +122,10 @@ class K8sSubmitter(PluginBase):
                 # remove any quotes
                 exec_list = job_pars_parsed.executable.strip('"\'').split(' ')
                 # take first word as executable
-                executable = exec_list[0]
+                executable = [exec_list[0]]
                 # take rest as arguments
                 if len(exec_list) > 1:
-                    args = ' '.join(exec_list[1:])
+                    args = [' '.join(exec_list[1:])]
         except (AttributeError, TypeError):
             executable = []
             args = []
