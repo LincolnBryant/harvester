@@ -37,7 +37,7 @@ class k8s_Client(object):
         return yaml_content
 
     def create_job_from_yaml(self, yaml_content, work_spec, container_image, cert, cert_in_secret=True,
-                             cpu_adjust_ratio=100, memory_adjust_ratio=100, executable=None):
+                             cpu_adjust_ratio=100, memory_adjust_ratio=100, executable=[], args=[]):
 
         tmp_log = core_utils.make_logger(base_logger, method_name='create_job_from_yaml')
 
@@ -74,15 +74,13 @@ class k8s_Client(object):
         if 'image' not in container_env:
             container_env['image'] = container_image
 
-        if executable:
-            command = executable
-            args = ''
-        else:
-            command = DEF_COMMAND
+        # if there is no user defined executable, run the default executable
+        if not executable:
+            executable = DEF_COMMAND
             args = DEF_ARGS
 
         if 'command' not in container_env:
-            container_env['command'] = command
+            container_env['command'] = executable
             container_env['args'] = args
 
         # set the resources (CPU and memory) we need for the container

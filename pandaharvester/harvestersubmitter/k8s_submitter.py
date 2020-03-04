@@ -115,14 +115,22 @@ class K8sSubmitter(PluginBase):
         return container_image
 
     def build_executable(self, job_fields, job_pars_parsed):
-        executable = None
+        executable = []
+        args = []
         try:
             if 'runcontainer' in job_fields['transformation']:
-                executable = job_pars_parsed.executable.strip('"\'')  # remove any quotes
+                # remove any quotes
+                exec_list = job_pars_parsed.executable.strip('"\'').split(' ')
+                # take first word as executable
+                executable = exec_list[0]
+                # take rest as arguments
+                if len(exec_list) > 1:
+                    args = ' '.join(exec_list[1:])
         except (AttributeError, TypeError):
-            executable = None
+            executable = []
+            args = []
 
-        return executable
+        return executable, args
 
     def submit_k8s_worker(self, work_spec):
         tmp_log = self.make_logger(base_logger, method_name='submit_k8s_worker')
@@ -140,8 +148,9 @@ class K8sSubmitter(PluginBase):
 
             # decide container image and executable to run
             container_image = self.decide_container_image(job_fields, job_pars_parsed)
-            executable = self.build_executable(job_fields, job_pars_parsed)
-            tmp_log.debug('container_image: "{0}"; executable: "{1}"'.format(container_image, executable))
+            executable, args = self.build_executable(job_fields, job_pars_parsed)
+            tmp_log.debug('container_image: "{0}"; executable: "{1}"; args: "{2}"'.format(container_image, executable,
+                                                                                          args))
 
             if hasattr(self, 'proxySecretPath'):
                 cert = self.proxySecretPath
@@ -158,7 +167,7 @@ class K8sSubmitter(PluginBase):
                                                                            cert, cert_in_secret=use_secret,
                                                                            cpu_adjust_ratio=self.cpuAdjustRatio,
                                                                            memory_adjust_ratio=self.memoryAdjustRatio,
-                                                                           executable=executable)
+                                                                           executable=executable, args=args)
         except Exception as _e:
             tmp_log.error(traceback.format_exc())
             err_str = 'Failed to create a JOB; {0}'.format(_e)
