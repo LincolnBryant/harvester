@@ -30,8 +30,9 @@ PJD = 'pandaJobData.out'
 PFC = 'PoolFileCatalog_H.xml'
 CONFIG_FILES = [PJD, PFC]
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s',
-                    filename='/tmp/vm_script.log', filemode='w')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', stream=sys.stdout)
+                    # handlers=[logging.FileHandler('/tmp/vm_script.log'), logging.StreamHandler(sys.stdout)])
+                    # filename='/tmp/vm_script.log', filemode='w')
 
 
 def post_multipart(host, port, selector, files, proxy_cert):
@@ -170,12 +171,20 @@ def get_configuration():
     if not stdout_name:
         stdout_name = '{0}_{1}.out'.format(harvester_id, worker_id)
 
+    logging.debug('[main] got filename for the stdout log')
+
     # get the submission mode (push/pull) for the pilot
     submit_mode = os.environ.get('submit_mode')
     if not submit_mode:
         submit_mode = 'PULL'
 
-    logging.debug('[main] got filename for the stdout log')
+    # see if there is a work directory specified
+    tmpdir = os.environ.get('TMPDIR')
+    if tmpdir:
+        global WORK_DIR
+        WORK_DIR = tmpdir
+        global CONFIG_DIR
+        CONFIG_DIR = tmpdir + '/jobconfig'
 
     return proxy_path, panda_site, panda_queue, resource_type, harvester_id, \
            worker_id, logs_frontend_w, logs_frontend_r, stdout_name, submit_mode
@@ -226,3 +235,4 @@ if __name__ == "__main__":
 
     # upload logs to e.g. panda cache or similar
     upload_logs(logs_frontend_w, '/tmp/wrapper-wid.log', destination_name, proxy_path)
+    logging.debug('[main] FINISHED')
